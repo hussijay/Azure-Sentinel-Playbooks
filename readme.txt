@@ -30,3 +30,6 @@ Trigger the Playbook:
 Once deployed, the Logic App will automatically trigger upon incident creation in Microsoft Sentinel, generating and posting AI-driven remediation suggestions.
 Use Case:
 This Logic App is particularly useful for automating the initial response phase in a Security Operations Center (SOC). By integrating AI-driven insights directly into the incident management workflow, it helps SOC analysts respond to threats more quickly and efficiently.
+
+To Deploy
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://github.com/hussijay/Azure-Sentinel-Playbooks/blob/main/template.json)
