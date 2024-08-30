@@ -33,3 +33,4 @@ This Logic App is particularly useful for automating the initial response phase 
 
 To Deploy
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://github.com/hussijay/Azure-Sentinel-Playbooks/blob/main/template.json)
+
