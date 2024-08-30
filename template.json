@@ -1,0 +1,133 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_Ai_Integration_name": {
+            "defaultValue": "Ai-Integration",
+            "type": "String"
+        },
+        "connections_azuresentinel_Ai_Integration_externalid": {
+            "defaultValue": "/subscriptions/a9757d3d-1853-43b8-8591-ffcb89bd1cb8/resourceGroups/SIEM/providers/Microsoft.Web/connections/azuresentinel-Ai-Integration",
+            "type": "String"
+        },
+        "connections_openaiip_2_externalid": {
+            "defaultValue": "/subscriptions/a9757d3d-1853-43b8-8591-ffcb89bd1cb8/resourceGroups/SIEM/providers/Microsoft.Web/connections/openaiip-2",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_Ai_Integration_name')]",
+            "location": "eastus",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "Microsoft_Sentinel_incident": {
+                            "type": "ApiConnectionWebhook",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                                    }
+                                },
+                                "body": {
+                                    "callback_url": "@{listCallbackUrl()}"
+                                },
+                                "path": "/incident-creation"
+                            }
+                        }
+                    },
+                    "actions": {
+                        "GPT3_Completes_your_prompt": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['openaiip']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": {
+                                    "model": "gpt-3.5-turbo-instruct",
+                                    "prompt": "how can I remediate @{triggerBody()?['object']?['properties']?['title']} with the description of @{triggerBody()?['object']?['properties']?['description']}",
+                                    "n": 1,
+                                    "best_of": 1,
+                                    "temperature": 1,
+                                    "max_tokens": 1000,
+                                    "frequency_penalty": 0,
+                                    "presence_penalty": 0
+                                },
+                                "path": "/v1/completions"
+                            }
+                        },
+                        "For_each": {
+                            "foreach": "@body('GPT3_Completes_your_prompt')?['choices']",
+                            "actions": {
+                                "Add_comment_to_incident_(V3)": {
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azuresentinel']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "body": {
+                                            "incidentArmId": "@triggerBody()?['object']?['id']",
+                                            "message": "<p>@{items('For_each')?['text']}</p>"
+                                        },
+                                        "path": "/Incidents/Comment"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "GPT3_Completes_your_prompt": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azuresentinel": {
+                                "id": "/subscriptions/a9757d3d-1853-43b8-8591-ffcb89bd1cb8/providers/Microsoft.Web/locations/eastus/managedApis/azuresentinel",
+                                "connectionId": "[parameters('connections_azuresentinel_Ai_Integration_externalid')]",
+                                "connectionName": "[concat('azuresentinel-', parameters('workflows_Ai_Integration_name'))]",
+                                "connectionProperties": {
+                                    "authentication": {
+                                        "type": "ManagedServiceIdentity"
+                                    }
+                                }
+                            },
+                            "openaiip": {
+                                "id": "/subscriptions/a9757d3d-1853-43b8-8591-ffcb89bd1cb8/providers/Microsoft.Web/locations/eastus/managedApis/openaiip",
+                                "connectionId": "[parameters('connections_openaiip_2_externalid')]",
+                                "connectionName": "openaiip-2"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_Ai_Integration_name": {
+            "value": null
+        },
+        "connections_azuresentinel_Ai_Integration_externalid": {
+            "value": null
+        },
+        "connections_openaiip_2_externalid": {
+            "value": null
+        }
+    }
+}
