@@ -34,4 +34,5 @@ Use Case:
 This Logic App is particularly useful for automating the initial response phase in a Security Operations Center (SOC). By integrating AI-driven insights directly into the incident management workflow, it helps SOC analysts respond to threats more quickly and efficiently.
 
 To Deploy  
-  [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://github.com/hussijay/Azure-Sentinel-Playbooks/blob/main/template.json)
+  [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/hussijay/Azure-Sentinel-Playbooks/main/template.json)
+
